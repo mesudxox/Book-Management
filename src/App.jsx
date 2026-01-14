@@ -1,9 +1,11 @@
 import React from 'react';
 
-const MyBookShelf = ({books}) => {
+const MyBookShelf = ({books, onDelete}) => {
   return (<div> <h2>My book collection</h2> 
-      <h3 style={{ color: 'blue' }}>{books.map((b, index) => <div key={index}>{b.title} by {b.author}</div>)}</h3>
-  </div>);
+      <h3 style={{ color: 'blue' }}>{books.map((b, id) => 
+      <div key={b.id}>{b.title} by {b.author}
+      <button onClick={() => onDelete(b.id)}>Delete</button></div>)}</h3>
+      </div>);
 };
 const BookItem=({book,stored} )=>{
   const [isHovered, setIsHovered] = React.useState(false);
@@ -64,6 +66,8 @@ const App = () => {
     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     book.author.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+
   const [myBooks, setMyBooks] = React.useState(
   // Convert the string back into a real JavaScript array
   JSON.parse(localStorage.getItem('myCollection')) || []
@@ -73,14 +77,21 @@ const App = () => {
   localStorage.setItem('myCollection', JSON.stringify(myBooks));
 }, [myBooks]);
   const updateBooks=(book)=>{
-    setMyBooks((prevBooks) => [...prevBooks, book]);
+    const newBook={...book, id: Date.now()};
+    setMyBooks((prevBooks) => [...prevBooks, newBook]);
   }
+const [deletedBooks, setDeletedBooks] = React.useState([]);
+const handleDelete=(bookId)=>{
+  setMyBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
+  setDeletedBooks((prevDeleted) => [...prevDeleted, bookId]);
+}
+
   return (
     <div>
       <h1>My Book Management </h1>
       <Search searchTerm={searchTerm} onSearch={handleSearch} />
       <Display storage={updateBooks} books={searchedTerm} />
-      <MyBookShelf books={myBooks}/>
+      <MyBookShelf books={myBooks} onDelete={handleDelete} />
     </div>
   );
 };
