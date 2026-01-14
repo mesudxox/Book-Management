@@ -62,10 +62,36 @@ const App = () => {
   const handleSearch=(event)=>{
     setSearchTerm(event.target.value);
   }
-  const searchedTerm=listOfBooks.filter(book=>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    book.author.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  const [fetchedBooks, setFetchedBooks] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  
+  React.useEffect(() => {
+  if (!searchTerm) {
+    setFetchedBooks([]);
+    return;
+  }
+
+  setIsLoading(true);
+
+  fetch(`https://openlibrary.org/search.json?title=${searchTerm}&limit=5`)
+    .then((response) => response.json())
+    .then((data) => {
+      const results = data.docs.map((book) => ({
+        title: book.title,
+        author: book.author_name ? book.author_name[0] : "Unknown",
+      }));
+      
+      setFetchedBooks(results);
+      setIsLoading(false);
+    })
+    .catch((err) => {
+      console.error(err);
+      setIsLoading(false);
+    });
+}, [searchTerm]);
+
+
 
 
   const [myBooks, setMyBooks] = React.useState(
@@ -90,7 +116,7 @@ const handleDelete=(bookId)=>{
     <div>
       <h1>My Book Management </h1>
       <Search searchTerm={searchTerm} onSearch={handleSearch} />
-      <Display storage={updateBooks} books={searchedTerm} />
+      <Display storage={updateBooks} books={fetchedBooks} />
       <MyBookShelf books={myBooks} onDelete={handleDelete} />
     </div>
   );
