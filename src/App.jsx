@@ -1,11 +1,36 @@
 import React from 'react';
 
-const MyBookShelf = ({books, onDelete}) => {
-  return (<div> <h2>My book collection</h2> 
-      <h3 style={{ color: 'blue' }}>{books.map((b, id) => 
-      <div key={b.id}>{b.title} by {b.author}
-      <button onClick={() => onDelete(b.id)}>Delete</button></div>)}</h3>
-      </div>);
+const MyBookShelf = ({books, onDelete, onToggleRead}) => {
+  return (
+    <div> 
+      <h2>My book collection</h2> 
+      <div>
+        {books.map((b) => (
+          <div key={b.id} style={{ 
+              borderLeft: b.isRead ? '5px solid green' : '5px solid gray',
+              padding: '10px',
+              margin: '10px 0',
+              backgroundColor: '#f9f9f9'
+            }}> 
+            <a href={b.link} target="_blank" rel="noreferrer">
+              {b.title} by {b.author}
+            </a>
+            
+            <div style={{ marginTop: '10px' }}>
+              <button onClick={() => onDelete(b.id)}>Delete</button>
+              
+              <button 
+                onClick={() => onToggleRead(b.id)} 
+                style={{ marginLeft: '10px' }}
+              >
+                {b.isRead ? "✅ Read" : "📖 Mark as Read"}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 const BookItem=({book,stored} )=>{
   const [isHovered, setIsHovered] = React.useState(false);
@@ -80,6 +105,7 @@ const App = () => {
       const results = data.docs.map((book) => ({
         title: book.title,
         author: book.author_name ? book.author_name[0] : "Unknown",
+        link: `https://openlibrary.org${book.key}`
       }));
       
       setFetchedBooks(results);
@@ -91,9 +117,6 @@ const App = () => {
     });
 }, [searchTerm]);
 
-
-
-
   const [myBooks, setMyBooks] = React.useState(
   // Convert the string back into a real JavaScript array
   JSON.parse(localStorage.getItem('myCollection')) || []
@@ -103,7 +126,7 @@ const App = () => {
   localStorage.setItem('myCollection', JSON.stringify(myBooks));
 }, [myBooks]);
   const updateBooks=(book)=>{
-    const newBook={...book, id: Date.now()};
+    const newBook={...book, id: Date.now(), isRead: false};
     setMyBooks((prevBooks) => [...prevBooks, newBook]);
   }
 const [deletedBooks, setDeletedBooks] = React.useState([]);
@@ -112,12 +135,20 @@ const handleDelete=(bookId)=>{
   setDeletedBooks((prevDeleted) => [...prevDeleted, bookId]);
 }
 
+const toggleReadStatus=(bookId)=>{
+  setMyBooks((prevBooks) =>
+    prevBooks.map((book) =>
+      book.id === bookId ? { ...book, isRead: !book.isRead } : book
+    )
+  );
+};
+
   return (
     <div>
       <h1>My Book Management </h1>
       <Search searchTerm={searchTerm} onSearch={handleSearch} />
       <Display storage={updateBooks} books={fetchedBooks} />
-      <MyBookShelf books={myBooks} onDelete={handleDelete} />
+      <MyBookShelf books={myBooks} onDelete={handleDelete} onToggleRead={toggleReadStatus} />
     </div>
   );
 };
