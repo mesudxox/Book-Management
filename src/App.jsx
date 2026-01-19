@@ -1,29 +1,26 @@
 import React from 'react';
+import './App.css';
 
 const MyBookShelf = ({books, onDelete, onToggleRead}) => {
   return (
-    <div> 
-      <h2>My book collection</h2> 
-      <div>
+    <div className="shelf-container"> 
+      <h2 style={{color: 'white'}}>Number of books: <span className="book-count">{books.length}</span></h2> 
+      <div className="shelf-grid">
         {books.map((b) => (
-          <div key={b.id} style={{ 
-              borderLeft: b.isRead ? '5px solid green' : '5px solid gray',
-              padding: '10px',
-              margin: '10px 0',
-              backgroundColor: '#f9f9f9'
+          <div key={b.id} className="shelf-item" style={{ 
+              borderLeft: b.isRead ? '5px solid #4ade80' : '5px solid #94a3b8',
             }}> 
-            <a href={b.link} target="_blank" rel="noreferrer">
-              {b.title} by {b.author}
-            </a>
+            <div className="shelf-info">
+              <strong>{b.title}</strong>
+              <a href={b.link} target="_blank" rel="noopener noreferrer" className="author-link">
+                {b.author}
+              </a>
+            </div>
             
-            <div style={{ marginTop: '10px' }}>
-              <button onClick={() => onDelete(b.id)}>Delete</button>
-              
-              <button 
-                onClick={() => onToggleRead(b.id)} 
-                style={{ marginLeft: '10px' }}
-              >
-                {b.isRead ? "✅ Read" : "📖 Mark as Read"}
+            <div className="shelf-actions">
+              <button className="btn-delete" onClick={() => onDelete(b.id)}>Delete</button>
+              <button className="btn-read" onClick={() => onToggleRead(b.id)}>
+                {b.isRead ? "✅ Read" : "📖 Mark Read"}
               </button>
             </div>
           </div>
@@ -32,54 +29,76 @@ const MyBookShelf = ({books, onDelete, onToggleRead}) => {
     </div>
   );
 };
+
 const BookItem=({book,stored} )=>{
-  const [isHovered, setIsHovered] = React.useState(false);
-  const handleButtonIn = () => {
-    setIsHovered(true);  };
-
-  const handleButtonLeave = () => {
-    setIsHovered(false);
-  };
   return (
-    <div>
-
-        <button onMouseEnter={handleButtonIn} onMouseLeave={handleButtonLeave} onClick={() => stored(book)} >
-        {isHovered ? "Add" : `${book.title} by ${book.author}`}
+    <div 
+      className="book-card" 
+      style={{ backgroundImage: `url(${book.coverUrl})` }}
+    >
+      <div className="card-overlay">
+        <h3>{book.title}</h3>
+        <p>{book.author}</p>
+        <button className="btn-add" onClick={() => stored(book)}>
+          + Add to Shelf
         </button>
+      </div>
     </div>
   );
 }
+
 const Display = (props) => {
-  
+  if (props.books.length === 0) return null;
   return (
-    <div>
-      <h2>Display Books Component</h2>
-      <ul>
+    <div className="results-section">
+      <h4 style={{color: 'white', textAlign: 'center'}}>Search results</h4>
+      <div className="book-grid">
         {props.books.map((book, index) => (
           <BookItem stored={props.storage} book={book} key={index} />
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
           
-const Search=(props) => {
+const Search = ({ searchTerm, onSearch }) => {
   return (
-    <div> 
-      <label htmlFor="search">Search:</label>
-      <input type="text" id="search" value={props.searchTerm} onChange={props.onSearch}/>
-    </div>);
+   <div className="container">
+  <header className="main-header">...</header>
+  
+  {/* SECTION 1: THE GLASS BOX */}
+  <div className="search-section">
+    <div className="search-container">
+      <div className="book-wrapper">
+        <div className="book-3d">
+          <div className="book-side pages"></div>
+          <div className="book-side spine"></div>
+          <div className="book-side cover"></div>
+        </div>
+      </div>
+      <input 
+        className="search-input" 
+        type="text" 
+        placeholder="Search for your next adventure..." 
+        value={searchTerm} 
+        onChange={onSearch}
+      />
+    </div>
+  </div>
+
+  {/* SECTION 2: THE HINT (OUTSIDE THE BOX) */}
+  {!searchTerm && <p className="search-hint-outside">Search for your book</p>}
+
+  <div className="results-section">...</div>
+</div>
+  );
 }
-    
 
 const App = () => {
-  const listOfBooks = [
-    { title: "The Road to React", author: "Robin Wieruch" },
-    { title: "JavaScript: The Good Parts", author: "Douglas Crockford" },
-    { title: "Clean Code", author: "Robert C. Martin" }
-  ];
   const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('searchTerm')||"react");
-  
+  const [fetchedBooks, setFetchedBooks] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+
   React.useEffect(()=>{
     localStorage.setItem("searchTerm", searchTerm);
   } ,[searchTerm])
@@ -88,66 +107,78 @@ const App = () => {
     setSearchTerm(event.target.value);
   }
 
-  const [fetchedBooks, setFetchedBooks] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  
   React.useEffect(() => {
-  if (!searchTerm) {
-    setFetchedBooks([]);
-    return;
-  }
+    if (!searchTerm.trim()) {
+      setFetchedBooks([]);
+      setIsLoading(false); 
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  fetch(`https://openlibrary.org/search.json?title=${searchTerm}&limit=5`)
-    .then((response) => response.json())
-    .then((data) => {
-      const results = data.docs.map((book) => ({
-        title: book.title,
-        author: book.author_name ? book.author_name[0] : "Unknown",
-        link: `https://openlibrary.org${book.key}`
-      }));
-      
-      setFetchedBooks(results);
-      setIsLoading(false);
-    })
-    .catch((err) => {
-      console.error(err);
-      setIsLoading(false);
-    });
-}, [searchTerm]);
+    const timer = setTimeout(() => {
+      fetch(`https://openlibrary.org/search.json?title=${searchTerm}&limit=5`)
+        .then((response) => response.json())
+        .then((data) => {
+          const results = data.docs.map((book) => ({
+            title: book.title,
+            author: book.author_name ? book.author_name[0] : "Unknown",
+            link: `https://openlibrary.org${book.key}`,
+            coverUrl: book.cover_i 
+              ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` 
+              : 'https://via.placeholder.com/400x600?text=No+Cover'
+          }));
+          setFetchedBooks(results);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.error(err);
+          setIsLoading(false);
+        });
+    }, 500); 
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const [myBooks, setMyBooks] = React.useState(
-  // Convert the string back into a real JavaScript array
-  JSON.parse(localStorage.getItem('myCollection')) || []
-);
- React.useEffect(() => {
-  // Convert the array into a string so localStorage can hold it
-  localStorage.setItem('myCollection', JSON.stringify(myBooks));
-}, [myBooks]);
+    JSON.parse(localStorage.getItem('myCollection')) || []
+  );
+
+  React.useEffect(() => {
+    localStorage.setItem('myCollection', JSON.stringify(myBooks));
+  }, [myBooks]);
+
   const updateBooks=(book)=>{
     const newBook={...book, id: Date.now(), isRead: false};
     setMyBooks((prevBooks) => [...prevBooks, newBook]);
   }
-const [deletedBooks, setDeletedBooks] = React.useState([]);
-const handleDelete=(bookId)=>{
-  setMyBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
-  setDeletedBooks((prevDeleted) => [...prevDeleted, bookId]);
-}
 
-const toggleReadStatus=(bookId)=>{
-  setMyBooks((prevBooks) =>
-    prevBooks.map((book) =>
-      book.id === bookId ? { ...book, isRead: !book.isRead } : book
-    )
-  );
-};
+  const handleDelete=(bookId)=>{
+    setMyBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
+  }
+
+  const toggleReadStatus=(bookId)=>{
+    setMyBooks((prevBooks) =>
+      prevBooks.map((book) =>
+        book.id === bookId ? { ...book, isRead: !book.isRead } : book
+      )
+    );
+  };
 
   return (
-    <div>
-      <h1>My Book Management </h1>
+    <div className="container">
+      <header className="main-header">
+      <div className="logo-xox">XOX</div>
+      <h1 className="main-title">My Book Management</h1>
+    </header>
       <Search searchTerm={searchTerm} onSearch={handleSearch} />
-      <Display storage={updateBooks} books={fetchedBooks} />
+      
+      {isLoading ? (
+        <div className="loader">Searching...</div>
+      ) : (
+        <Display storage={updateBooks} books={fetchedBooks} />
+      )}
+      
       <MyBookShelf books={myBooks} onDelete={handleDelete} onToggleRead={toggleReadStatus} />
     </div>
   );
