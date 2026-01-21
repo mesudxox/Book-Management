@@ -1,26 +1,33 @@
 import React from 'react';
 import './App.css';
 
-const MyBookShelf = ({books, onDelete, onToggleRead}) => {
+const MyBookShelf = ({ books, onDelete, onToggleRead }) => {
   return (
-    <div className="shelf-container"> 
-      <h2 style={{color: 'white'}}>Number of books: <span className="book-count">{books.length}</span></h2> 
+    <div className="shelf-container">
+      <h1 className="collection-header">My Book Collection</h1>
+      <h2 className="collection-stats">
+        Number of books: <span className="book-count">{books.length}</span>
+      </h2>
+
       <div className="shelf-grid">
         {books.map((b) => (
-          <div key={b.id} className="shelf-item" style={{ 
-              borderLeft: b.isRead ? '5px solid #4ade80' : '5px solid #94a3b8',
-            }}> 
+          <div className="shelf-item" key={b.id}>
             <div className="shelf-info">
-              <strong>{b.title}</strong>
-              <a href={b.link} target="_blank" rel="noopener noreferrer" className="author-link">
+              <h3 className="shelf-title">{b.title}</h3>
+              <a href={b.link} target="_blank" rel="noopener noreferrer" className="shelf-author">
                 {b.author}
               </a>
             </div>
-            
             <div className="shelf-actions">
-              <button className="btn-delete" onClick={() => onDelete(b.id)}>Delete</button>
-              <button className="btn-read" onClick={() => onToggleRead(b.id)}>
-                {b.isRead ? "✅ Read" : "📖 Mark Read"}
+              <button 
+                className="btn-read" 
+                onClick={() => onToggleRead(b.id)}
+                style={{ opacity: b.isRead ? 0.6 : 1 }}
+              >
+                {b.isRead ? '✓ Read' : 'Mark Read'}
+              </button>
+              <button className="btn-delete" onClick={() => onDelete(b.id)}>
+                Remove
               </button>
             </div>
           </div>
@@ -30,7 +37,7 @@ const MyBookShelf = ({books, onDelete, onToggleRead}) => {
   );
 };
 
-const BookItem=({book,stored} )=>{
+const BookItem = ({ book, stored }) => {
   return (
     <div 
       className="book-card" 
@@ -45,13 +52,13 @@ const BookItem=({book,stored} )=>{
       </div>
     </div>
   );
-}
+};
 
 const Display = (props) => {
   if (props.books.length === 0) return null;
   return (
     <div className="results-section">
-      <h4 style={{color: 'white', textAlign: 'center'}}>Search results</h4>
+      <h4 style={{ color: 'white', textAlign: 'center', marginBottom: '20px' }}>Search results</h4>
       <div className="book-grid">
         {props.books.map((book, index) => (
           <BookItem stored={props.storage} book={book} key={index} />
@@ -59,53 +66,87 @@ const Display = (props) => {
       </div>
     </div>
   );
-}
-          
+};
+
 const Search = ({ searchTerm, onSearch }) => {
   return (
-   <div className="container">
-  <header className="main-header">...</header>
-  
-  {/* SECTION 1: THE GLASS BOX */}
-  <div className="search-section">
-    <div className="search-container">
-      <div className="book-wrapper">
-        <div className="book-3d">
-          <div className="book-side pages"></div>
-          <div className="book-side spine"></div>
-          <div className="book-side cover"></div>
+    <>
+      <div className="search-section">
+        <div className="search-container">
+          <div className="book-wrapper">
+            <div className="book-3d">
+              <div className="book-side pages"></div>
+              <div className="book-side spine"></div>
+              <div className="book-side cover"></div>
+            </div>
+          </div>
+          <input 
+            className="search-input" 
+            type="text" 
+            placeholder="Search for your next adventure..." 
+            value={searchTerm} 
+            onChange={onSearch}
+          />
         </div>
       </div>
-      <input 
-        className="search-input" 
-        type="text" 
-        placeholder="Search for your next adventure..." 
-        value={searchTerm} 
-        onChange={onSearch}
-      />
-    </div>
-  </div>
-
-  {/* SECTION 2: THE HINT (OUTSIDE THE BOX) */}
-  {!searchTerm && <p className="search-hint-outside">Search for your book</p>}
-
-  <div className="results-section">...</div>
-</div>
+      {!searchTerm && <p className="search-hint-outside">Search for your book</p>}
+    </>
   );
-}
+};
+
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('searchTerm')||"react");
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+  const [searchTerm, setSearchTerm] = React.useState(localStorage.getItem('searchTerm') || "react");
   const [fetchedBooks, setFetchedBooks] = React.useState([]);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [myBooks, setMyBooks] = React.useState(
+    JSON.parse(localStorage.getItem('myCollection')) || []
+  );
 
-  React.useEffect(()=>{
-    localStorage.setItem("searchTerm", searchTerm);
-  } ,[searchTerm])
+  const collectionRef = React.useRef(null);
+  const aboutRef = React.useRef(null);
 
-  const handleSearch=(event)=>{
+  const scrollToCollection = (e) => {
+    e.preventDefault();
+    setIsSettingsOpen(false);
+    collectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToAbout = (e) => {
+    e.preventDefault();
+    setIsSettingsOpen(false);
+    aboutRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleSearch = (event) => {
     setSearchTerm(event.target.value);
-  }
+  };
+
+  const updateBooks = (book) => {
+    const newBook = { ...book, id: Date.now(), isRead: false };
+    setMyBooks((prevBooks) => [...prevBooks, newBook]);
+  };
+
+  const handleDelete = (bookId) => {
+    setMyBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
+  };
+
+  const toggleReadStatus = (bookId) => {
+    setMyBooks((prevBooks) =>
+      prevBooks.map((book) =>
+        book.id === bookId ? { ...book, isRead: !book.isRead } : book
+      )
+    );
+  };
+
+  React.useEffect(() => {
+    localStorage.setItem("searchTerm", searchTerm);
+  }, [searchTerm]);
+
+  React.useEffect(() => {
+    localStorage.setItem('myCollection', JSON.stringify(myBooks));
+  }, [myBooks]);
 
   React.useEffect(() => {
     if (!searchTerm.trim()) {
@@ -113,7 +154,6 @@ const App = () => {
       setIsLoading(false); 
       return;
     }
-
     setIsLoading(true);
 
     const timer = setTimeout(() => {
@@ -140,37 +180,37 @@ const App = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  const [myBooks, setMyBooks] = React.useState(
-    JSON.parse(localStorage.getItem('myCollection')) || []
-  );
-
-  React.useEffect(() => {
-    localStorage.setItem('myCollection', JSON.stringify(myBooks));
-  }, [myBooks]);
-
-  const updateBooks=(book)=>{
-    const newBook={...book, id: Date.now(), isRead: false};
-    setMyBooks((prevBooks) => [...prevBooks, newBook]);
-  }
-
-  const handleDelete=(bookId)=>{
-    setMyBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
-  }
-
-  const toggleReadStatus=(bookId)=>{
-    setMyBooks((prevBooks) =>
-      prevBooks.map((book) =>
-        book.id === bookId ? { ...book, isRead: !book.isRead } : book
-      )
-    );
-  };
-
   return (
     <div className="container">
       <header className="main-header">
-      <div className="logo-xox">XOX</div>
-      <h1 className="main-title">My Book Management</h1>
-    </header>
+        <div className="logo-xox">XOX</div>
+        <h1 className="main-title">My reading place</h1>
+        
+        <div className="settings-wrapper">
+          <button 
+            className="settings-trigger" 
+            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+          >
+            Settings ⚙️
+          </button>
+          
+          {isSettingsOpen && (
+            <div className="settings-dropdown">
+              <a href="#collection" onClick={scrollToCollection}>My Collection</a>
+              <a href="#about" onClick={scrollToAbout}>About & Contact</a>
+              <a href="mailto:mesudxox@gmail.com">Direct Email</a>
+              <div className="dropdown-divider"></div>
+              <button className="btn-clear-data" onClick={() => {
+                if(window.confirm("Clear all data and reset app?")) {
+                  localStorage.clear();
+                  window.location.reload();
+                }
+              }}>Reset App</button>
+            </div>
+          )}
+        </div>
+      </header>
+
       <Search searchTerm={searchTerm} onSearch={handleSearch} />
       
       {isLoading ? (
@@ -179,7 +219,32 @@ const App = () => {
         <Display storage={updateBooks} books={fetchedBooks} />
       )}
       
-      <MyBookShelf books={myBooks} onDelete={handleDelete} onToggleRead={toggleReadStatus} />
+      <div ref={collectionRef} style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        <MyBookShelf 
+          books={myBooks} 
+          onDelete={handleDelete} 
+          onToggleRead={toggleReadStatus} 
+        />
+      </div>
+
+      <footer className="main-footer" ref={aboutRef}>
+        <div className="footer-content">
+          <h2 className="footer-title">About the Developer</h2>
+          <div className="footer-grid">
+            <div className="footer-info">
+              <p><strong>GitHub:</strong> <a href="https://github.com/mesudxox" target="_blank" rel="noreferrer">mesudxox</a></p>
+              <p><strong>Email:</strong> mesudxox@gmail.com</p>
+              <p><strong>Project:</strong> XOX Book Tracker</p>
+            </div>
+            <div className="footer-bio">
+              <p>Created with passion for readers. This application helps you discover new adventures and organize your personal library in a 3D immersive environment.</p>
+            </div>
+          </div>
+          <div className="footer-bottom">
+            &copy; 2026 MESUDXOX. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
