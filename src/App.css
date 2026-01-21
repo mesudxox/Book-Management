@@ -801,3 +801,45 @@ body {
     gap: 20px;
   }
 }
+/* --- MOBILE RESPONSIVE STYLES --- */
+@media (max-width: 768px) {
+  .main-header {
+    display: flex;
+    flex-direction: column; /* Stack the elements vertically */
+    align-items: center;
+    padding-top: 60px;      /* Space for the logo/settings row */
+    min-height: 180px;      /* Give the header more height to breathe */
+  }
+
+  .logo-xox {
+    position: absolute;
+    top: 15px;              /* Move to top edge */
+    left: 20px;             /* Align to top left corner */
+    font-size: 2.2rem;      /* Shrink slightly for mobile screens */
+  }
+
+  .settings-wrapper {
+    position: absolute;
+    top: 15px;              /* Move to top edge */
+    right: 20px;            /* Align to top right corner */
+  }
+
+  .main-title {
+    margin-top: 20px;       /* Push title down below the Logo/Settings line */
+    font-size: 2rem;        /* Shrink text size to fit screen width */
+    text-align: center;
+    width: 90%;             /* Ensure it doesn't touch the screen edges */
+    transform: none;        /* Remove any previous translateY adjustments */
+  }
+
+  /* Optional: Shrink search bar for mobile */
+  .search-section {
+    width: 95% !important;
+    height: 100px;
+  }
+  
+  .search-input {
+    font-size: 1rem;
+    padding-left: 50px;
+  }
+}
