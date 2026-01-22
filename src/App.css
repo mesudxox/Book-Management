@@ -792,54 +792,55 @@ body {
   color: rgba(255, 255, 255, 0.5);
   letter-spacing: 2px;
 }
-@media (max-width: 940px) {
-  .main-footer {
-    width: 95%;
-  }
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-}
-/* --- MOBILE RESPONSIVE STYLES --- */
 @media (max-width: 768px) {
+  /* 1. Remove the Logo */
+  .logo-xox {
+    display: none;
+  }
+
+  /* 2. Tighten the Header and pull everything UP */
   .main-header {
     display: flex;
-    flex-direction: column; /* Stack the elements vertically */
+    flex-direction: row;      /* Put title and settings on one line */
+    justify-content: center;  /* Center the group */
     align-items: center;
-    padding-top: 60px;      /* Space for the logo/settings row */
-    min-height: 180px;      /* Give the header more height to breathe */
-  }
-
-  .logo-xox {
-    position: absolute;
-    top: 15px;              /* Move to top edge */
-    left: 20px;             /* Align to top left corner */
-    font-size: 2.2rem;      /* Shrink slightly for mobile screens */
-  }
-
-  .settings-wrapper {
-    position: absolute;
-    top: 15px;              /* Move to top edge */
-    right: 20px;            /* Align to top right corner */
+    padding: 20px 0;          /* Small padding to pull it to the top */
+    min-height: auto;         /* Remove extra height */
+    gap: 15px;                /* Space between text and icon */
   }
 
   .main-title {
-    margin-top: 20px;       /* Push title down below the Logo/Settings line */
-    font-size: 2rem;        /* Shrink text size to fit screen width */
-    text-align: center;
-    width: 90%;             /* Ensure it doesn't touch the screen edges */
-    transform: none;        /* Remove any previous translateY adjustments */
+    font-size: 1.8rem;        
+    margin: 0;                
+    transform: none;
+    background-clip: text;
+    white-space: nowrap;      
   }
 
-  /* Optional: Shrink search bar for mobile */
-  .search-section {
-    width: 95% !important;
-    height: 100px;
+  .settings-wrapper {
+    position: static;        
   }
-  
-  .search-input {
-    font-size: 1rem;
-    padding-left: 50px;
+
+  .settings-trigger {
+    font-size: 1.8rem;        
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-section {
+    margin-top: 0 !important;
+    width: 92% !important;
+    height: 90px;
+  }
+
+  .settings-dropdown {
+    position: absolute;
+    right: 10px;
+    top: 60px;
+    width: 180px;
   }
 }
