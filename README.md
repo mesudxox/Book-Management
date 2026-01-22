@@ -3,7 +3,7 @@
 ![Project Banner](https://via.placeholder.com/1000x400/1e1b4b/a5f3fc?text=XOX+Book+Tracker+Preview)
 
 ## 🚀 Live Demo
-**View the live application:** [https://xox-book-tracker.vercel.app](https://xox-book-tracker.vercel.app)
+**View the live application:** [https://book-management-gamma-liard.vercel.app](https://book-management-gamma-liard.vercel.app)
 
 ---
 
